@@ -10,10 +10,22 @@ type Alumno struct {
 }
 
 func (student Alumno) detalle() {
-	fmt.Println("El Nombre del alumno es:", student.Nombre)
-	fmt.Println("El Apellido del alumno es:", student.Apellido)
-	fmt.Println("El DNI del alumno es:", student.DNI)
-	fmt.Println("La feccha de ingreso del alumno es:", student.Fecha)
+	if student.Nombre !="" {
+		
+		fmt.Println("El Nombre del alumno es:", student.Nombre)
+	}
+	if student.Apellido != "" {
+		
+		fmt.Println("El Apellido del alumno es:", student.Apellido)
+	}
+	if student.DNI != "" {
+		
+		fmt.Println("El DNI del alumno es:", student.DNI)
+	}
+	if student.Fecha != "" {
+		
+		fmt.Println("La feccha de ingreso del alumno es:", student.Fecha)
+	}
 }
 
 func RegistroStudiantes() {

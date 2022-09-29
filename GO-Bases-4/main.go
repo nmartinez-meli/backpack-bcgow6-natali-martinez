@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/nmartinez-meli/backpack-bcgow6-natali-martinez/ejerciciosTM"
+	"github.com/nmartinez-meli/backpack-bcgow6-natali-martinez/GO-Bases-4/ejerciciosTM"
 )
 
 func main() {

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/nmartinez-meli/backpack-bcgow6-natali-martinez/ejerciciosTM"
+	"github.com/nmartinez-meli/backpack-bcgow6-natali-martinez/Go-Bases-3/ejerciciosTM"
 )
 
 func main() {

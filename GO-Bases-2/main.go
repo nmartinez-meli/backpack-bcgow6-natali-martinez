@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/nmartinez-meli/backpack-bcgow6-natali-martinez/ejerciciosTM"
-	"github.com/nmartinez-meli/backpack-bcgow6-natali-martinez/ejerciciosTT"
+	"github.com/nmartinez-meli/backpack-bcgow6-natali-martinez/GO-Bases-2/ejerciciosTM"
+	"github.com/nmartinez-meli/backpack-bcgow6-natali-martinez/GO-Bases-2/ejerciciosTT"
 )
 
 func main() {

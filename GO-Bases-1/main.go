@@ -1,7 +1,7 @@
 package main
 
-import "github.com/nmartinez-meli/backpack-bcgow6-natali-martinez/ejerciciosTM"
-import "github.com/nmartinez-meli/backpack-bcgow6-natali-martinez/ejerciciosTT"
+import "github.com/nmartinez-meli/backpack-bcgow6-natali-martinez/GO-Bases-1/ejerciciosTM"
+import "github.com/nmartinez-meli/backpack-bcgow6-natali-martinez/GO-Bases-1/ejerciciosTT"
 import "fmt"
 
 func main()  {
