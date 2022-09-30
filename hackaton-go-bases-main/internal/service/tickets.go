@@ -2,7 +2,12 @@ package service
 
 import (
 	"errors"
+	"fmt"
+	"reflect"
 	"sort"
+	"strconv"
+
+	"github.com/bootcamp-go/hackaton-go-bases/internal/file"
 )
 
 type Bookings interface {
@@ -18,6 +23,7 @@ type Bookings interface {
 
 type bookings struct {
 	Tickets []Ticket
+	file    file.File
 }
 
 type Ticket struct {
@@ -27,12 +33,47 @@ type Ticket struct {
 }
 
 // NewBookings creates a new bookings service
-func NewBookings(Tickets []Ticket) Bookings {
-	return &bookings{Tickets: Tickets}
+func NewBookings(path string) (Bookings, error) {
+	archivo := file.File{Path: path}
+	records, err := archivo.Read()
+	if err != nil {
+		return nil, err
+	}
+	tickets := []Ticket{}
+	for _, ticket := range records {
+		id, err := strconv.Atoi(ticket[0])
+		if err != nil {
+			return &bookings{}, err
+		}
+		price, err := strconv.Atoi(ticket[5])
+		if err != nil {
+			return &bookings{}, err
+		}
+		tickets = append(tickets, Ticket{
+			Id:          id,
+			Names:       ticket[1],
+			Email:       ticket[2],
+			Destination: ticket[3],
+			Date:        ticket[4],
+			Price:       price,
+		})
+	}
+	return &bookings{Tickets: tickets, file: archivo}, nil
 }
 
 func (b *bookings) Create(t Ticket) (Ticket, error) {
-	return Ticket{}, nil
+	valuesTicket := reflect.ValueOf(t)
+
+	ticketFiels := []string{}
+	for i := 0; i < valuesTicket.NumField(); i++ {
+		ticketFiels = append(ticketFiels, fmt.Sprintf("%v", valuesTicket.Field(i).Interface()))
+	}
+	err := b.file.Write(ticketFiels)
+	if err != nil {
+		return Ticket{}, err
+	}
+	b.Tickets = append(b.Tickets, t)
+	return t, nil
 }
 
 func (b *bookings) Read(id int) (Ticket, error) {
@@ -47,9 +88,41 @@ func (b *bookings) Read(id int) (Ticket, error) {
 }
 
 func (b *bookings) Update(id int, t Ticket) (Ticket, error) {
-	return Ticket{}, nil
+	var newBookings [][]string
+	for i, record := range b.Tickets {
+		var row []string
+		if record.Id == id {
+			row = []string{fmt.Sprint(record.Id), t.Names, t.Email, t.Destination, t.Date, fmt.Sprint(t.Price)}
+			b.Tickets[i] = t
+		} else {
+			row = []string{fmt.Sprint(record.Id), record.Names, record.Email, record.Destination, record.Date, fmt.Sprint(record.Price)}
+		}
+		newBookings = append(newBookings, row)
+	}
+
+	err := b.file.WriteAll(newBookings)
+	if err != nil {
+		return Ticket{}, err
+	}
+	return t, nil
 }
 
 func (b *bookings) Delete(id int) (int, error) {
-	return 0, nil
+	var newBookings [][]string
+	var tickets []Ticket
+
+	for _, record := range b.Tickets {
+		var row []string
+		if record.Id != id {
+			row = []string{fmt.Sprint(record.Id), record.Names, record.Email, record.Destination, record.Date, fmt.Sprint(record.Price)}
+			tickets = append(tickets, record)
+			newBookings = append(newBookings, row)
+		}
+	}
+
+	err := b.file.WriteAll(newBookings)
+	if err != nil {
+		return id, err
+	}
+	return id, nil
 }
