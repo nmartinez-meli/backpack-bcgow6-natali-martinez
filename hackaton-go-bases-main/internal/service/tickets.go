@@ -3,7 +3,6 @@ package service
 import (
 	"errors"
 	"fmt"
-	"reflect"
 	"sort"
 	"strconv"
 
@@ -62,12 +61,20 @@ func NewBookings(path string) (Bookings, error) {
 }
 
 func (b *bookings) Create(t Ticket) (Ticket, error) {
-	valuesTicket := reflect.ValueOf(t)
-
-	ticketFiels := []string{}
-	for i := 0; i < valuesTicket.NumField(); i++ {
-		ticketFiels = append(ticketFiels, fmt.Sprintf("%v", valuesTicket.Field(i).Interface()))
+	sort.Slice(b.Tickets, func(i, j int) bool {
+		return b.Tickets[i].Id < b.Tickets[j].Id
+	})
+	i := sort.Search(len(b.Tickets), func(i int) bool { return b.Tickets[i].Id >= t.Id || i == len(b.Tickets)-1 })
+	if b.Tickets[i].Id == t.Id {
+		return t, errors.New("error: un ticket con ese id ya se encuentra registrado")
 	}
+	// valuesTicket := reflect.ValueOf(t)
+
+	// ticketFiels := []string{}
+	// for i := 0; i < valuesTicket.NumField(); i++ {
+	// 	ticketFiels = append(ticketFiels, fmt.Sprintf("%v", valuesTicket.Field(i).Interface()))
+	// }
+	ticketFiels := []string{fmt.Sprint(t.Id), t.Names, t.Email, t.Destination, t.Date, fmt.Sprint(t.Price)}
 	err := b.file.Write(ticketFiels)
 	if err != nil {
 		return Ticket{}, err
@@ -80,7 +87,7 @@ func (b *bookings) Read(id int) (Ticket, error) {
 	sort.Slice(b.Tickets, func(i, j int) bool {
 		return b.Tickets[i].Id < b.Tickets[j].Id
 	})
-	i := sort.Search(len(b.Tickets), func(i int) bool { return b.Tickets[i].Id >= id && i < len(b.Tickets)-1 })
+	i := sort.Search(len(b.Tickets), func(i int) bool { return b.Tickets[i].Id >= id || i == len(b.Tickets)-1 })
 	if b.Tickets[i].Id != id {
 		return Ticket{}, errors.New("error: el ticket no se encuentra registrado")
 	}
@@ -110,19 +117,20 @@ func (b *bookings) Update(id int, t Ticket) (Ticket, error) {
 func (b *bookings) Delete(id int) (int, error) {
 	var newBookings [][]string
 	var tickets []Ticket
-
+	err := fmt.Errorf("no se encontro el id (%d)", id)
 	for _, record := range b.Tickets {
 		var row []string
 		if record.Id != id {
 			row = []string{fmt.Sprint(record.Id), record.Names, record.Email, record.Destination, record.Date, fmt.Sprint(record.Price)}
 			tickets = append(tickets, record)
 			newBookings = append(newBookings, row)
+		} else {
+			err = nil
 		}
 	}
-
-	err := b.file.WriteAll(newBookings)
-	if err != nil {
-		return id, err
+	err2 := b.file.WriteAll(newBookings)
+	if err2 != nil {
+		return id, err2
 	}
-	return id, nil
+	return id, err
 }

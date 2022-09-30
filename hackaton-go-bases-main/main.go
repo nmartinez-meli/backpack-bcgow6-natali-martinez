@@ -21,26 +21,33 @@ func main() {
 
 	ticket, err = b.Read(24)
 	if err != nil {
-		println(err)
+		fmt.Println(err)
+	} else {
+
+		fmt.Println(ticket)
 	}
-	fmt.Println(ticket)
-	t := ticket
-	t.Id = 1001
+	t := service.Ticket{Id: 1001, Names: "Natali Martinez", Email: "natali.martinez@mercadolibre.com", Destination: "fortaleza", Date: "7-12-2022", Price: 4500}
+
 	newTicket, err = b.Create(t)
 	if err != nil {
-		println(err)
+
+		fmt.Println(err)
+	} else {
+		fmt.Printf("el ticket %v fue creado con exito\n", newTicket)
 	}
-	fmt.Printf("el ticket %v fue creado con exito\n", newTicket)
 	t = ticket
 	t.Names = "NATALI"
 	newTicket, err = b.Update(24, t)
 	if err != nil {
 		panic(err)
+	} else {
+		fmt.Printf("el ticket %v fue actualizado con exito\n", newTicket)
 	}
-	fmt.Printf("el ticket %v fue actualizado con exito\n", newTicket)
 	ticketIndex, err := b.Delete(25)
 	if err != nil {
 		fmt.Printf("el ticket %d no pudo ser eliminado\n error: %v\n", ticketIndex, err)
+	} else {
+
+		fmt.Printf("el ticket con id (%d) fue eliminado con exito\n", ticketIndex)
 	}
-	fmt.Printf("el ticket con id (%d) fue eliminado con exito\n", ticketIndex)
 }
