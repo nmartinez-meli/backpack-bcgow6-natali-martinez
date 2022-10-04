@@ -20,8 +20,8 @@ func main() {
 	// ejerciciosTM.PromedioAlumno()
 	fmt.Println("Ejercicio 1 TT")
 	ejerciciosTT.RegistroStudiantes()
-	// fmt.Println("Ejercicio 2 TT")
-	// ejerciciosTM.PromedioAlumno()
-	// fmt.Println("Ejercicio 3 TT")
-	// ejerciciosTM.CalcularSueldo()
+	fmt.Println("Ejercicio 2 TT")
+	ejerciciosTT.Matriz()
+	fmt.Println("Ejercicio 3 TT")
+	ejerciciosTT.EcommerceProductos()
 }
