@@ -3,10 +3,12 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nmartinez-meli/backpack-bcgow6-natali-martinez/GO-Web-1/internal/users"
+	"github.com/nmartinez-meli/backpack-bcgow6-natali-martinez/GO-Web-1/pkg/web"
 )
 
 type request struct {
@@ -37,51 +39,64 @@ type User struct {
 	service users.Service
 }
 
-func NewProduct(u users.Service) *User {
+func NewUser(u users.Service) *User {
 	return &User{
 		service: u,
 	}
 }
 
+// @Summary Show a list of users
+// @Tags Users
+// @Produce json
+// @Param token header string true "token"
+// @Success 200 {object} web.Response "List users"
+// @Failure 401 {object} web.Response "Unauthorized"
+// @Router /users [GET]
 func (c *User) GetAll(ctx *gin.Context) {
-	token := ctx.Request.Header.Get("token")
-	if token != "123456" {
-		ctx.JSON(401, gin.H{
-			"error": "token inválido",
-		})
+	tokenReq := ctx.GetHeader("token")
+	if tokenReq != os.Getenv("TOKEN") {
+		ctx.JSON(http.StatusUnauthorized, web.NewResponse(http.StatusUnauthorized, nil, ""))
 		return
 	}
 
-	user, err := c.service.GetAll()
+	users, err := c.service.GetAll()
 	if err != nil {
-		ctx.JSON(404, gin.H{
-			"error": err.Error(),
-		})
+		ctx.JSON(http.StatusNotFound, web.NewResponse(http.StatusNotFound, nil, err.Error()))
 		return
 	}
-	ctx.JSON(200, user)
+	ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, users, ""))
 }
 
+// @Summary  Show a user
+// @Tags Users
+// @Produce json
+// @Param    id     	path 	  int 	        	true   	"Id user"
+// @Param    token  	header    string        	true  	"token"
+// @Success  200    	{object}  web.Response  			"user details"
+// @Failure  401    	{object}  web.Response  			"Unauthorized"
+// @Failure  500    	{object}  web.Response  			"Internal server error "
+// @Failure  404    	{object}  web.Response  			"user not found"
+// @Router   /users/{id} [GET]
 func (c *User) GetUser(ctx *gin.Context) {
-
+	tokenReq := ctx.GetHeader("token")
+	if tokenReq != os.Getenv("TOKEN") {
+		ctx.JSON(http.StatusUnauthorized, web.NewResponse(http.StatusUnauthorized, nil, ""))
+		return
+	}
 	paramID := ctx.Param("id")
 	userID, err := strconv.Atoi(paramID)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		ctx.JSON(http.StatusInternalServerError, web.NewResponse(http.StatusInternalServerError, nil, err.Error()))
 		return
 	}
 	user, err := c.service.GetUser(int64(userID))
 
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{
-			"error": err.Error(),
-		})
+		ctx.JSON(http.StatusNotFound, web.NewResponse(http.StatusNotFound, nil, err.Error()))
 		return
 	}
 
-	ctx.JSON(200, user)
+	ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, user, ""))
 }
 
 // func (c *User) GetFilterUsers(ctx *gin.Context) {
@@ -157,86 +172,138 @@ func (c *User) GetUser(ctx *gin.Context) {
 // 	})
 // }
 
+// @Summary  Store users
+// @Tags     Users
+// @Accept   json
+// @Produce  json
+// @Param    token    header    string          true  "token requerido"
+// @Param    users  body      request  true  "User to Store"
+// @Success  200    	{object}  web.Response  			"user create"
+// @Failure  401    	{object}  web.Response  			"Unauthorized"
+// @Failure  500    	{object}  web.Response  			"Internal server error "
+// @Failure  400    	{object}  web.Response  			"Bad Request"
+// @Router   /users [POST]
 func (c *User) CreateUser(ctx *gin.Context) {
+	tokenReq := ctx.GetHeader("token")
+	if tokenReq != os.Getenv("TOKEN") {
+		ctx.JSON(http.StatusUnauthorized, web.NewResponse(http.StatusUnauthorized, nil, ""))
+		return
+	}
 
 	var req request
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(404, gin.H{
-			"error": err.Error(),
-		})
+		ctx.JSON(http.StatusBadRequest, web.NewResponse(http.StatusBadRequest, nil, err.Error()))
 		return
 	}
 	user, err := c.service.CreateUser(req.Nombre, req.Apellido, req.Email, req.Edad, req.Altura, req.Activo)
 	if err != nil {
-		ctx.JSON(404, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, web.NewResponse(http.StatusInternalServerError, nil, err.Error()))
 		return
 	}
-	ctx.JSON(200, user)
+	ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, user, ""))
 }
-func (c *User) Update(ctx *gin.Context) {
 
+// @Summary  Update user
+// @Tags     Users
+// @Accept   json
+// @Produce  json
+// @Param    id       path      int             true   "User id"
+// @Param    token    header    string          false  "Token"
+// @Param    user  body      requestUpdateDTO  true   "User to update"
+// @Success  200    	{object}  web.Response  			"user update"
+// @Failure  401    	{object}  web.Response  			"Unauthorized"
+// @Failure  500    	{object}  web.Response  			"Internal server error "
+// @Failure  400    	{object}  web.Response  			"Bad Request"
+// @Router   /users/{id} [PUT]
+func (c *User) Update(ctx *gin.Context) {
+	tokenReq := ctx.GetHeader("token")
+	if tokenReq != os.Getenv("TOKEN") {
+		ctx.JSON(http.StatusUnauthorized, web.NewResponse(http.StatusUnauthorized, nil, ""))
+		return
+	}
 	paramID := ctx.Param("id")
 	userID, err := strconv.Atoi(paramID)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		ctx.JSON(http.StatusInternalServerError, web.NewResponse(http.StatusInternalServerError, nil, err.Error()))
 		return
 	}
 	var req requestUpdateDTO
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		ctx.JSON(http.StatusBadRequest, web.NewResponse(http.StatusBadRequest, nil, err.Error()))
 		return
 	}
 	user, err := c.service.Update(req.Nombre, req.Apellido, req.Email, req.FechaCreacion, int64(userID), req.Id, req.Edad, req.Altura, req.Activo)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, web.NewResponse(http.StatusInternalServerError, nil, err.Error()))
 		return
 	}
-	ctx.JSON(http.StatusOK, user)
+	ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, user, ""))
 }
-func (c *User) DeleteUser(ctx *gin.Context) {
 
+// @Summary  Delete user
+// @Tags     Users
+// @Param    id     path      int     true  "User id"
+// @Param    token  header    string  true  "Token"
+// @Success  204
+// @Success  200    	{object}  web.Response  			"user delete"
+// @Failure  401    	{object}  web.Response  			"Unauthorized"
+// @Failure  500    	{object}  web.Response  			"Internal server error "
+// @Router   /users/{id} [DELETE]
+func (c *User) DeleteUser(ctx *gin.Context) {
+	tokenReq := ctx.GetHeader("token")
+	if tokenReq != os.Getenv("TOKEN") {
+		ctx.JSON(http.StatusUnauthorized, web.NewResponse(http.StatusUnauthorized, nil, ""))
+		return
+	}
 	paramID := ctx.Param("id")
 	userID, err := strconv.Atoi(paramID)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		ctx.JSON(http.StatusInternalServerError, web.NewResponse(http.StatusInternalServerError, nil, err.Error()))
 		return
 	}
 
 	if err := c.service.DeleteUser(int64(userID)); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, web.NewResponse(http.StatusInternalServerError, nil, err.Error()))
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{
-		"mensaje": fmt.Sprintf("el uusuario con id = %s se elimino correctamente", paramID),
-	})
-}
-func (c *User) UpdateField(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, fmt.Sprintf("el usuario con id = %s se elimino correctamente", paramID), ""))
 
+}
+
+// @Summary      Update name lastname
+// @Tags         Users
+// @Accept       json
+// @Produce      json
+// @Description  This endpoint update field name and lastname from a user
+// @Param        token  header    string               true  "Token header"
+// @Param        id     path      int                  true  "User id"
+// @Param        name&lastname  body      requestUpdateFieldsDTO  true  "User name and lastname"
+// @Success  200    	{object}  web.Response  			"user update"
+// @Failure  401    	{object}  web.Response  			"Unauthorized"
+// @Failure  500    	{object}  web.Response  			"Internal server error "
+// @Failure  400    	{object}  web.Response  			"Bad Request"
+// @Router       /users/{id} [PATCH]
+func (c *User) UpdateField(ctx *gin.Context) {
+	tokenReq := ctx.GetHeader("token")
+	if tokenReq != os.Getenv("TOKEN") {
+		ctx.JSON(http.StatusUnauthorized, web.NewResponse(http.StatusUnauthorized, nil, ""))
+		return
+	}
 	paramID := ctx.Param("id")
 	userID, err := strconv.Atoi(paramID)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		ctx.JSON(http.StatusInternalServerError, web.NewResponse(http.StatusInternalServerError, nil, err.Error()))
 		return
 	}
 	var req requestUpdateFieldsDTO
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		ctx.JSON(http.StatusBadRequest, web.NewResponse(http.StatusBadRequest, nil, err.Error()))
 		return
 	}
 	user, err := c.service.UpdateField(req.Nombre, req.Apellido, int64(userID))
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, web.NewResponse(http.StatusInternalServerError, nil, err.Error()))
 		return
 	}
-	ctx.JSON(http.StatusOK, user)
+	ctx.JSON(http.StatusOK, web.NewResponse(http.StatusOK, user, ""))
 }

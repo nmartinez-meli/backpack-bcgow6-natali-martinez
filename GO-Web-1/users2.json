@@ -1,0 +1,12 @@
+[
+	{
+		"id": 2,
+		"nombre": "JUAN",
+		"apellido": "Perez",
+		"email": "mail@mail.com",
+		"edad": 2,
+		"activo": true,
+		"altura": 1.58,
+		"fechaCreacion": "7-10-2022"
+	}
+]

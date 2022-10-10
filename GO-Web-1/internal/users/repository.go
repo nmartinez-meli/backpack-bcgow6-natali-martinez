@@ -1,11 +1,9 @@
 package users
 
 import (
-	"encoding/json"
 	"errors"
-	"log"
-	"os"
-	"strings"
+
+	"github.com/nmartinez-meli/backpack-bcgow6-natali-martinez/GO-Web-1/pkg/store"
 )
 
 type User struct {
@@ -31,17 +29,13 @@ type Repository interface {
 	// Update(id int, name, productType string, count int, price float64) (User, error)
 }
 
-type repository struct{} //struct implementa los metodos de la interfaz
+type repository struct {
+	store store.Store
+} //struct implementa los metodos de la interfaz
 
-func NewRepository() Repository {
-	file, err := os.ReadFile("../../users.json")
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err = json.Unmarshal(file, &users); err != nil {
-		log.Fatal(err)
-	}
-	return &repository{}
+func NewRepository(store store.Store) Repository {
+	store.Read(&users)
+	return &repository{store}
 }
 
 func (r *repository) CreateUser(nombre, apellido, email, fechaCreacion string, edad int64, altura float64, activo bool) (User, error) {
@@ -52,7 +46,7 @@ func (r *repository) CreateUser(nombre, apellido, email, fechaCreacion string, e
 		user.ID = id + 1
 	}
 	users = append(users, user)
-	if err := write(users); err != nil {
+	if err := r.store.Write(&users); err != nil {
 		return User{}, err
 	}
 	return user, nil
@@ -66,7 +60,7 @@ func (r *repository) Update(nombre, apellido, email, fechaCreacion string, id, e
 			users[index] = user
 		}
 	}
-	if err := write(users); err != nil {
+	if err := r.store.Write(&users); err != nil {
 		return User{}, err
 	}
 	return user, nil
@@ -80,7 +74,7 @@ func (r *repository) UpdateField(nombre, apellido string, user User) (User, erro
 			users[index] = user
 		}
 	}
-	if err := write(users); err != nil {
+	if err := r.store.Write(&users); err != nil {
 		return User{}, err
 	}
 
@@ -108,7 +102,7 @@ func (r *repository) DeleteUser(user User) error {
 		}
 	}
 	users = filter
-	if err := write(users); err != nil {
+	if err := r.store.Write(&users); err != nil {
 		return err
 	}
 	return nil
@@ -116,13 +110,9 @@ func (r *repository) DeleteUser(user User) error {
 }
 
 func lastID() (int64, error) {
-	return users[len(users)-1].ID, nil
-}
+	if len(users) > 0 {
 
-func write(users []User) error {
-	jsonUser, err := json.Marshal(users)
-	if err != nil {
-		return err
+		return users[len(users)-1].ID, nil
 	}
-	return os.WriteFile("../../users.json", []byte(strings.ReplaceAll(string(jsonUser), ",", ",\n")), 0644)
+	return 0, nil
 }
