@@ -1,0 +1,27 @@
+¿Cuáles son las diferencias entre White Box y Black Box? 
+En el metodo Black Box la estructura, diseño o funcionamiento interno de
+un modulo es desconocido. Se prueba la funcionalidad del codigo desde el exterior del modulo. 
+Mientras que en White Box se realizan las prubas sobre las funciones internas de un modulo,
+quien la ejecuta tiene visibilidad sobre el codigo
+
+¿Qué es un test funcional?
+Son las prubas que se basan en la entrada y salida del software,
+con el objetivo de comprobar la respuesta del software ante cada escenario,
+coincida con el resultado esperado.
+
+¿Qué es un Test de Integración?
+Es la prueba que evalua la comunicacion entre distintos componentes o capas de la aplicacion.
+Exponen el funcionamiento general de la aplicacion permitiendo evaluar su dseño,
+desempeño y comportamiento.
+
+Indicar las dimensiones de calidad prioritarias en MELI.
+- Funcionalidad: Se espera que la funcionalidad del producto sea la correcta 
+                 y que sea completa (cumpla todos los requerimientos)
+- Rendimiento: Se espera que el código se ejecute en un tiempo prudente. 
+               Y que haga un buen uso de los recursos.
+- Fiabilidad: Se espera que el código sea confiable. Que sea poco propenso a errores
+              y que pueda recuperarse cuando ocurra alguno. Ademas que tenga alta disponibilidad.
+- Seguridad: Se espera que el código sea seguro. No exponga datos sensibles y 
+             que los resultados que arroje no puedan ser repudiables.
+- Mantenibilidad: Se espera que el código sea modular, testeable, que permita 
+                  la reusabilididad, que pueda ser fácilmente modificable y analizable.
